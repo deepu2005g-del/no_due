@@ -41,14 +41,25 @@ def seed_test_accounts():
             )
             user_id = cur.fetchone()[0]
 
-        # If student, ensure students table entry exists
+        # If student, ensure students table entry exists and is linked properly
         if role == 'student':
+            # Find the ID of faculty@test.com to assign as advisor
+            cur.execute("SELECT id FROM users WHERE email = %s", ('faculty@test.com',))
+            faculty_id = cur.fetchone()[0]
+            
             cur.execute("SELECT id FROM students WHERE user_id = %s", (user_id,))
-            if not cur.fetchone():
+            student_exists = cur.fetchone()
+            if not student_exists:
                 print(f"Creating student record for {email}")
                 cur.execute(
-                    "INSERT INTO students (user_id, roll_no, department, semester, attendance_pct) VALUES (%s, %s, %s, %s, %s)",
-                    (user_id, 'TEST2024001', 'Computer Science', 8, 88.5)
+                    "INSERT INTO students (user_id, roll_no, department, semester, attendance_pct, faculty_advisor_id) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (user_id, 'TEST2024001', 'Computer Science', 8, 88.5, faculty_id)
+                )
+            else:
+                print(f"Updating student record for {email} with faculty advisor {faculty_id}")
+                cur.execute(
+                    "UPDATE students SET faculty_advisor_id = %s WHERE user_id = %s",
+                    (faculty_id, user_id)
                 )
 
     conn.commit()

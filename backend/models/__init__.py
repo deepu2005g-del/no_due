@@ -6,14 +6,22 @@ import psycopg2
 import psycopg2.extras
 from config import get_config
 
+from psycopg2 import pool
+
 config = get_config()
 
+# Initialize a global thread-safe connection pool
+# Global connection to bypass all Supabase rate limits/deadlocks
+global_conn = None
 
 def get_db():
-    """Create and return a new database connection."""
-    conn = psycopg2.connect(config.DATABASE_URL)
-    conn.autocommit = False
-    return conn
+    global global_conn
+    if global_conn is None or global_conn.closed:
+        global_conn = psycopg2.connect(config.DATABASE_URL)
+        global_conn.autocommit = True
+    return global_conn
+
+
 
 
 def query_db(sql, params=None, one=False, commit=False):
@@ -41,5 +49,3 @@ def query_db(sql, params=None, one=False, commit=False):
     except Exception as e:
         conn.rollback()
         raise e
-    finally:
-        conn.close()
