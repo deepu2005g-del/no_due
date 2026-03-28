@@ -77,9 +77,15 @@ export default function StaffDashboard() {
       </div>
 
       <div className="glass-card overflow-hidden">
-        <div className="p-6 border-b border-surface-700/50">
-          <h2 className="text-lg font-semibold text-white">Hall Ticket Management</h2>
-          <p className="text-sm text-surface-400">Generate and print hall tickets for approved students</p>
+        <div className="p-6 border-b border-surface-700/50 flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Pending Hall Ticket Issuance</h2>
+            <p className="text-sm text-surface-400">Manage HOD-approved student clearances</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs text-emerald-400 font-medium">Monitoring Approved Requests</span>
+          </div>
         </div>
 
         {requests.length === 0 ? (
@@ -105,13 +111,18 @@ export default function StaffDashboard() {
                     <td className="table-cell">{req.ticket_number ? <span className="badge-approved">{req.ticket_number}</span> : <span className="badge-pending">Not Generated</span>}</td>
                     <td className="table-cell text-right">
                       {req.ticket_number ? (
-                        <button onClick={() => viewTicket(req.id)} className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-500/15 text-primary-400 border border-primary-500/30 hover:bg-primary-500/25 flex items-center gap-1 ml-auto">
-                          <HiOutlineArrowDownTray className="w-3.5 h-3.5" /> View
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => viewTicket(req.id)} className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-500/15 text-primary-400 border border-primary-500/30 hover:bg-primary-500/25 flex items-center gap-1">
+                            <HiOutlineArrowDownTray className="w-3.5 h-3.5" /> View
+                          </button>
+                        </div>
                       ) : (
-                        <button onClick={() => generateTicket(req.id)} className="btn-success text-xs py-1.5 flex items-center gap-1 ml-auto">
-                          <HiOutlineTicket className="w-3.5 h-3.5" /> Generate
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded">READY</span>
+                          <button onClick={() => generateTicket(req.id)} className="btn-success text-xs py-1.5 flex items-center gap-1">
+                            <HiOutlineTicket className="w-3.5 h-3.5" /> Generate Ticket
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

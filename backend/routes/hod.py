@@ -24,6 +24,49 @@ def get_requests():
     return jsonify({'requests': requests_list}), 200
 
 
+@hod_bp.route('/all-status', methods=['GET'])
+@jwt_required()
+def get_all_status():
+    """Get all requests in the HOD's department for monitoring."""
+    claims = get_jwt()
+    if claims.get('role') != 'hod':
+        return jsonify({'error': 'HOD access required'}), 403
+
+    # For now, get all requests since we're in a demo/flat structure
+    # In a real app, this would filter by HOD's department
+    from models.request import get_all_requests
+    all_reqs = get_all_requests()
+    return jsonify({'requests': all_reqs}), 200
+
+
+@hod_bp.route('/stats', methods=['GET'])
+@jwt_required()
+def get_stats():
+    """Get high-level stats for the HOD dashboard."""
+    claims = get_jwt()
+    if claims.get('role') != 'hod':
+        return jsonify({'error': 'HOD access required'}), 403
+
+    # Total requests
+    totals = query_db("SELECT COUNT(*) as total FROM requests", one=True)
+    # Status counts
+    status_counts = query_db("SELECT status, COUNT(*) as count FROM requests GROUP BY status")
+    # Department clearance activity
+    dept_stats = query_db("""
+        SELECT d.name as department, COUNT(a.id) as approvals
+        FROM departments d
+        LEFT JOIN approvals a ON d.id = a.department_id AND a.status = 'approved'
+        GROUP BY d.name
+    """)
+    
+    return jsonify({
+        'totals': totals,
+        'status_counts': status_counts,
+        'department_stats': dept_stats,
+        'avg_processing_hours': 12 # Placeholder for demo
+    }), 200
+
+
 @hod_bp.route('/approve/<int:request_id>', methods=['POST'])
 @jwt_required()
 def approve_request(request_id):

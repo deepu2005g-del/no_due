@@ -10,8 +10,7 @@ export default function HodDashboard() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState([])
-  const [stats, setStats] = useState(null)
-  const [actionModal, setActionModal] = useState(null)
+  const [allRequests, setAllRequests] = useState([])
   const [remarks, setRemarks] = useState('')
   const [activeTab, setActiveTab] = useState('queue')
 
@@ -19,12 +18,14 @@ export default function HodDashboard() {
 
   const fetchData = async () => {
     try {
-      const [reqRes, statsRes] = await Promise.all([
+      const [reqRes, statsRes, allRes] = await Promise.all([
         API.get('/hod/requests'),
-        API.get('/analytics/stats').catch(() => ({ data: {} })),
+        API.get('/hod/stats'),
+        API.get('/hod/all-status').catch(() => ({ data: { requests: [] } }))
       ])
       setRequests(reqRes.data.requests || [])
-      setStats(statsRes.data)
+      setStats(statsRes.data || null)
+      setAllRequests(allRes.data.requests || [])
     } catch (err) { toast.error('Failed to load') }
     finally { setLoading(false) }
   }
@@ -64,6 +65,7 @@ export default function HodDashboard() {
 
       <div className="flex gap-4 mb-6">
         <button onClick={() => setActiveTab('queue')} className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'queue' ? 'bg-primary-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'}`}>Final Approval Queue</button>
+        <button onClick={() => setActiveTab('pipeline')} className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'pipeline' ? 'bg-primary-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'}`}>Pipeline Overview</button>
         <button onClick={() => setActiveTab('reports')} className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'reports' ? 'bg-primary-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'}`}>Department Reports</button>
       </div>
 
@@ -114,6 +116,49 @@ export default function HodDashboard() {
           </div>
         )}
       </div>
+      ) : activeTab === 'pipeline' ? (
+        <div className="glass-card overflow-hidden">
+          <div className="p-6 border-b border-surface-700/50">
+            <h2 className="text-lg font-semibold text-white">Full Department Pipeline</h2>
+            <p className="text-sm text-surface-400">Monitoring all active clearance requests</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-surface-800/50">
+                <tr>
+                  <th className="table-header">Student</th>
+                  <th className="table-header">Roll No</th>
+                  <th className="table-header">Status</th>
+                  <th className="table-header">Clearance</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-700/30">
+                {allRequests.map(req => (
+                  <tr key={req.id} className="hover:bg-surface-800/30 transition-colors">
+                    <td className="table-cell font-medium text-white">{req.student_name}</td>
+                    <td className="table-cell text-surface-400">{req.roll_no}</td>
+                    <td className="table-cell capitalize">
+                      <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold ${
+                        req.status === 'hod_approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                        req.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        {req.status.replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                    <td className="table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1 bg-surface-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-500" style={{ width: `${(req.approved_count / req.total_departments) * 100}%` }} />
+                        </div>
+                        <span className="text-[10px] text-surface-400">{req.approved_count}/{req.total_departments}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
         <div className="space-y-6 animate-fade-in">
           <div className="glass-card p-6">
