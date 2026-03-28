@@ -17,14 +17,28 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [reqRes, deptRes] = await Promise.all([
+      const [reqRes, deptRes, userRes] = await Promise.all([
         API.get('/admin/requests'),
         API.get('/admin/departments'),
+        API.get('/admin/users').catch(() => ({ data: { users: [] } })),
       ])
       setRequests(reqRes.data.requests || [])
       setDepartments(deptRes.data.departments || [])
+      setUsers(userRes.data.users || [])
     } catch (err) { toast.error('Failed to load data') }
     finally { setLoading(false) }
+  }
+
+  const [users, setUsers] = useState([])
+  const [activeTab, setActiveTab] = useState('requests')
+
+  const deleteUser = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return
+    try {
+      await API.delete(`/admin/users/${id}`)
+      toast.success('User deleted!')
+      fetchData()
+    } catch (err) { toast.error(err.response?.data?.error || 'Delete failed') }
   }
 
   const handleAction = async () => {
@@ -49,7 +63,13 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="glass-card overflow-hidden">
+      <div className="flex gap-4 mb-6">
+        <button onClick={() => setActiveTab('requests')} className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'requests' ? 'bg-primary-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'}`}>Clearance Area</button>
+        <button onClick={() => setActiveTab('users')} className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'users' ? 'bg-primary-500 text-white' : 'bg-surface-800 text-surface-400 hover:text-white'}`}>User Management (Admin Control)</button>
+      </div>
+
+      {activeTab === 'requests' ? (
+        <div className="glass-card overflow-hidden">
         <div className="p-6 border-b border-surface-700/50">
           <h2 className="text-lg font-semibold text-white">Department Clearance Requests</h2>
         </div>
@@ -83,6 +103,38 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+      ) : (
+        <div className="glass-card overflow-hidden">
+          <div className="p-6 border-b border-surface-700/50 flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-white">Full User Control Panel</h2>
+            <button className="btn-primary text-xs" onClick={() => toast.error('Use signup for adding users in this demo')}>+ Add New User</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-surface-800/50">
+                <tr>
+                  <th className="table-header">Name</th>
+                  <th className="table-header">Email</th>
+                  <th className="table-header">Role</th>
+                  <th className="table-header text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-700/30">
+                {users.map(u => (
+                  <tr key={u.id} className="hover:bg-surface-800/30 transition-colors">
+                    <td className="table-cell text-white font-medium">{u.name}</td>
+                    <td className="table-cell text-surface-400">{u.email}</td>
+                    <td className="table-cell capitalize"><span className={`badge ${u.role === 'admin' ? 'badge-approved' : 'badge-pending'}`}>{u.role}</span></td>
+                    <td className="table-cell text-right">
+                      <button onClick={() => deleteUser(u.id)} className="text-red-400 hover:text-red-300 p-2">Remove</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {actionModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setActionModal(null)}>

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import API from '../../api/axios'
 import toast from 'react-hot-toast'
-import { HiOutlineTicket, HiOutlineDownload, HiOutlinePrinter } from 'react-icons/hi'
+import { HiOutlineTicket, HiOutlineArrowDownTray, HiOutlinePrinter } from 'react-icons/hi2'
 
 export default function StaffDashboard() {
   const [requests, setRequests] = useState([])
@@ -106,7 +106,7 @@ export default function StaffDashboard() {
                     <td className="table-cell text-right">
                       {req.ticket_number ? (
                         <button onClick={() => viewTicket(req.id)} className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-500/15 text-primary-400 border border-primary-500/30 hover:bg-primary-500/25 flex items-center gap-1 ml-auto">
-                          <HiOutlineDownload className="w-3.5 h-3.5" /> View
+                          <HiOutlineArrowDownTray className="w-3.5 h-3.5" /> View
                         </button>
                       ) : (
                         <button onClick={() => generateTicket(req.id)} className="btn-success text-xs py-1.5 flex items-center gap-1 ml-auto">

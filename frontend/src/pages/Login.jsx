@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { HiOutlineShieldCheck, HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
+import { HiOutlineShieldCheck, HiOutlineEnvelope, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeSlash } from 'react-icons/hi2'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -55,7 +55,7 @@ export default function Login() {
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-2">Email</label>
               <div className="relative">
-                <HiOutlineMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
                 <input
                   id="login-email"
                   type="email"
@@ -80,7 +80,7 @@ export default function Login() {
                 />
                 <button type="button" onClick={() => setShowPw(!showPw)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-white">
-                  {showPw ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+                  {showPw ? <HiOutlineEyeSlash className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
                 </button>
               </div>
             </div>

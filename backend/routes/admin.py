@@ -149,3 +149,32 @@ def approve_request(request_id):
             )
 
         return jsonify({'message': 'Department clearance rejected'}), 200
+
+
+@admin_bp.route('/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    """Get all users (Admin only)."""
+    claims = get_jwt()
+    if claims.get('role') != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    users = query_db("SELECT id, name, email, role, is_active, created_at FROM users ORDER BY created_at DESC")
+    return jsonify({'users': users}), 200
+
+
+@admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    """Delete a user (Admin only)."""
+    claims = get_jwt()
+    if claims.get('role') != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    # Don't delete self
+    current_user_id = int(get_jwt_identity())
+    if user_id == current_user_id:
+        return jsonify({'error': 'Cannot delete your own admin account'}), 400
+    
+    query_db("DELETE FROM users WHERE id = %s", (user_id,), commit=True)
+    return jsonify({'message': 'User deleted successfully'}), 200

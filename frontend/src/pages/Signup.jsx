@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { HiOutlineShieldCheck, HiOutlineUser, HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi'
+import { HiOutlineShieldCheck, HiOutlineUser, HiOutlineEnvelope, HiOutlineLockClosed } from 'react-icons/hi2'
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -68,7 +68,7 @@ export default function Signup() {
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1.5">Email</label>
               <div className="relative">
-                <HiOutlineMail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
                 <input name="email" type="email" value={form.email} onChange={handleChange}
                   className="input-field pl-10" placeholder="you@college.edu" />
               </div>

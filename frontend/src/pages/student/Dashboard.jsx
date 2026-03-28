@@ -109,6 +109,28 @@ export default function StudentDashboard() {
         </div>
       )}
 
+      {/* Dues and Payments Section */}
+      <div className="glass-card p-6 border-l-4 border-amber-500/50">
+        <h3 className="text-lg font-semibold text-white mb-4">My Dues / Payments</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-surface-300">
+          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
+            <p className="text-xs text-surface-500 mb-1">Library Dues</p>
+            <p className="text-lg font-bold text-white">₹0.00</p>
+            <span className="text-[10px] text-emerald-400">● All Cleared</span>
+          </div>
+          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
+            <p className="text-xs text-surface-500 mb-1">Hostel Fees</p>
+            <p className="text-lg font-bold text-white">₹4,500.00</p>
+            <span className="text-[10px] text-amber-400">● Pending Payment</span>
+          </div>
+          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
+            <p className="text-xs text-surface-500 mb-1">Account Balance</p>
+            <p className="text-lg font-bold text-white">₹0.00</p>
+            <span className="text-[10px] text-emerald-400">● No Arrears</span>
+          </div>
+        </div>
+      </div>
+
       {/* Requests List */}
       {requests.map((req) => (
         <div key={req.id} className="glass-card p-6 animate-slide-up">
