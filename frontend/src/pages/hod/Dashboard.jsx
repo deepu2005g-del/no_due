@@ -13,6 +13,8 @@ export default function HodDashboard() {
   const [allRequests, setAllRequests] = useState([])
   const [remarks, setRemarks] = useState('')
   const [activeTab, setActiveTab] = useState('queue')
+  const [stats, setStats] = useState(null)
+  const [actionModal, setActionModal] = useState(null)
 
   useEffect(() => { fetchData() }, [])
 

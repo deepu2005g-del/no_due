@@ -4,6 +4,20 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Drop existing tables if they exist (clean slate for demo)
+DROP TABLE IF EXISTS hall_tickets CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS approvals CASCADE;
+DROP TABLE IF EXISTS requests CASCADE;
+DROP TABLE IF EXISTS students CASCADE;
+DROP TABLE IF EXISTS departments CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Drop existing types if they exist
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS request_status CASCADE;
+DROP TYPE IF EXISTS approval_status CASCADE;
+
 -- Enum types
 CREATE TYPE user_role AS ENUM ('student', 'faculty', 'admin', 'hod', 'staff');
 CREATE TYPE request_status AS ENUM ('pending', 'faculty_approved', 'departments_cleared', 'hod_approved', 'rejected', 'resubmitted');
