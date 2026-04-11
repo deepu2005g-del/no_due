@@ -110,3 +110,10 @@ def get_me():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     return jsonify({'user': user}), 200
+
+
+@auth_bp.route('/faculty-list', methods=['GET'])
+def faculty_list():
+    """Public endpoint: return all faculty users so students can pick an advisor on signup."""
+    rows = query_db("SELECT id, name, email FROM users WHERE role = 'faculty' AND is_active = TRUE ORDER BY name")
+    return jsonify({'faculty': rows}), 200

@@ -104,13 +104,13 @@ export default function Login() {
 
           {/* Demo Credentials */}
           <div className="mt-6 p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
-            <p className="text-xs font-semibold text-surface-400 mb-2">Demo Credentials (password: password123)</p>
+            <p className="text-xs font-semibold text-surface-400 mb-2">Demo Credentials &mdash; password: <span className="text-primary-400">password123</span></p>
             <div className="grid grid-cols-2 gap-1 text-xs text-surface-400">
-              <span>Student:</span><span className="text-surface-300">student1@college.edu</span>
-              <span>Faculty:</span><span className="text-surface-300">faculty@college.edu</span>
-              <span>Admin:</span><span className="text-surface-300">admin@college.edu</span>
-              <span>HOD:</span><span className="text-surface-300">hod@college.edu</span>
-              <span>Staff:</span><span className="text-surface-300">staff@college.edu</span>
+              <span>Student:</span><span className="text-surface-300">keerthi@gmail.com</span>
+              <span>Faculty:</span><span className="text-surface-300">ammu@gmail.com</span>
+              <span>Admin:</span><span className="text-surface-300">adi@gmail.com</span>
+              <span>HOD:</span><span className="text-surface-300">shivu@gmail.com</span>
+              <span>Staff:</span><span className="text-surface-300">john@gmail.com</span>
             </div>
           </div>
         </div>
