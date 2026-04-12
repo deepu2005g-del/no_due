@@ -62,9 +62,10 @@ def create_app():
 
     return app
 
+# Create the application instance for Gunicorn/production
+app = create_app()
 
 if __name__ == '__main__':
-    app = create_app()
     print("=" * 50)
     print("  No-Due Clearance System API")
     print("  Running on http://localhost:5000")
