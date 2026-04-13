@@ -10,7 +10,7 @@ import axios from 'axios'
 import { HiOutlineShieldCheck, HiOutlineUser, HiOutlineEnvelope, HiOutlineLockClosed } from 'react-icons/hi2'
 
 /* Get API URL from env or default to localhost:5000 */
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL
 
 export default function Signup() {
   const [form, setForm] = useState({
