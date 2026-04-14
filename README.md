@@ -1,4 +1,4 @@
-live server : no-nk4fn9r0g-deepu-gs-projects.vercel.app
+live server : https://no-nk4fn9r0g-deepu-gs-projects.vercel.app
 # No-Due Clearance Management System
 
 A full-stack web application that digitizes the college no-due clearance process with a multi-level approval workflow.
