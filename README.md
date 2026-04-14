@@ -1,3 +1,4 @@
+live server : no-nk4fn9r0g-deepu-gs-projects.vercel.app
 # No-Due Clearance Management System
 
 A full-stack web application that digitizes the college no-due clearance process with a multi-level approval workflow.
@@ -65,84 +66,6 @@ npm run dev
 # → Running on http://localhost:5173
 ```
 
-### 4. Open Browser
-Navigate to `http://localhost:5173`
-
----
-
-## Demo Credentials
-
-All passwords: `password123`
-
-| Role     | Email                  | Description          |
-|----------|------------------------|----------------------|
-| Student  | student1@college.edu   | 92.5% attendance     |
-| Student  | student2@college.edu   | 78.3% (ineligible)   |
-| Student  | student3@college.edu   | 88.0% attendance     |
-| Faculty  | faculty@college.edu    | Faculty Advisor      |
-| Admin    | admin@college.edu      | Dept. Administrator  |
-| HOD      | hod@college.edu        | Head of Department   |
-| Staff    | staff@college.edu      | Dept. Staff          |
-
----
-
-## API Routes
-
-### Authentication
-| Method | Endpoint              | Description        |
-|--------|-----------------------|--------------------|
-| POST   | `/api/auth/register`  | Register new user  |
-| POST   | `/api/auth/login`     | Login, get JWT     |
-| GET    | `/api/auth/me`        | Get current user   |
-
-### Student
-| Method | Endpoint                        | Description          |
-|--------|---------------------------------|----------------------|
-| POST   | `/api/student/request`          | Submit no-due request|
-| GET    | `/api/student/status`           | View request status  |
-| POST   | `/api/student/resubmit/:id`     | Resubmit rejected   |
-
-### Faculty
-| Method | Endpoint                       | Description           |
-|--------|--------------------------------|-----------------------|
-| GET    | `/api/faculty/students`        | Assigned students     |
-| POST   | `/api/faculty/approve/:id`     | Approve/reject (85%)  |
-
-### Admin
-| Method | Endpoint                      | Description           |
-|--------|-------------------------------|-----------------------|
-| GET    | `/api/admin/requests`         | Pending dept requests |
-| GET    | `/api/admin/departments`      | All departments       |
-| POST   | `/api/admin/approve/:id`      | Clear/reject dept     |
-
-### HOD
-| Method | Endpoint                   | Description           |
-|--------|----------------------------|-----------------------|
-| GET    | `/api/hod/requests`        | Ready for approval    |
-| POST   | `/api/hod/approve/:id`     | Final approve/reject  |
-| POST   | `/api/hod/bulk-approve`    | Bulk approve          |
-
-### Staff
-| Method | Endpoint                       | Description           |
-|--------|---------------------------------|----------------------|
-| GET    | `/api/staff/approved`           | Approved students    |
-| POST   | `/api/staff/hallticket/:id`     | Generate hall ticket |
-| GET    | `/api/staff/hallticket/:id`     | View hall ticket     |
-
-### Notifications
-| Method | Endpoint                          | Description       |
-|--------|-----------------------------------|-------------------|
-| GET    | `/api/notifications/`             | All notifications |
-| PUT    | `/api/notifications/:id/read`     | Mark as read      |
-| PUT    | `/api/notifications/read-all`     | Mark all read     |
-
-### Analytics
-| Method | Endpoint              | Description           |
-|--------|-----------------------|-----------------------|
-| GET    | `/api/analytics/stats`| System-wide stats     |
-
----
-
 ## Project Structure
 
 ```
@@ -192,11 +115,3 @@ no_due/
 │           ├── hod/Dashboard.jsx
 │           └── staff/Dashboard.jsx
 └── README.md
-```
-
-## Business Rules
-- **Attendance ≥ 85%** required for faculty approval
-- **No pending dues** allowed for department clearance
-- **Auto-flag** ineligible students on submission
-- **Resubmission** allowed after rejection
-- **Notifications** sent at each workflow step
