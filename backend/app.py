@@ -14,6 +14,12 @@ def create_app():
     app = Flask(__name__)
     cfg = get_config()
 
+    try:
+        from db_init import initialize_database
+        initialize_database()
+    except Exception as exc:
+        app.logger.error('Database initialization failed: %s', exc)
+
     # Core config
     app.config['SECRET_KEY'] = cfg.SECRET_KEY
     app.config['JWT_SECRET_KEY'] = cfg.JWT_SECRET_KEY
