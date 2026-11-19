@@ -60,6 +60,15 @@ def create_app():
     def health():
         return jsonify({'status': 'ok', 'message': 'No-Due Clearance System API'}), 200
 
+    @app.route('/api/health/db', methods=['GET'])
+    def health_db():
+        from models import query_db
+        try:
+            rows = query_db("SHOW TABLES LIKE 'users'")
+            return jsonify({'status': 'ok', 'users_table': bool(rows)}), 200
+        except Exception as e:
+            return jsonify({'status': 'error', 'error': str(e)}), 500
+
     return app
 
 # Create the application instance for Gunicorn/production

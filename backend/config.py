@@ -22,6 +22,7 @@ class Config:
     DB_NAME = os.getenv('DB_NAME', 'nodue_db')
     DB_USER = os.getenv('DB_USER', 'root')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_SSL = os.getenv('DB_SSL', 'false').lower() in ('1', 'true', 'yes')
 
     DATABASE_URL = os.getenv(
         'DATABASE_URL',

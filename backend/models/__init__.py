@@ -15,11 +15,16 @@ DB_PORT = int(config.DB_PORT)
 DB_USER = config.DB_USER
 DB_PASSWORD = config.DB_PASSWORD
 DB_NAME = config.DB_NAME
+DB_SSL = getattr(config, 'DB_SSL', False)
 
 def get_db():
+    kwargs = {}
+    if DB_SSL:
+        kwargs['ssl'] = {'ssl': {}}
     return pymysql.connect(
         host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD,
-        database=DB_NAME, autocommit=True, cursorclass=pymysql.cursors.DictCursor
+        database=DB_NAME, autocommit=True, cursorclass=pymysql.cursors.DictCursor,
+        **kwargs
     )
 
 
