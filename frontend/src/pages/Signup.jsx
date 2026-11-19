@@ -6,11 +6,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import axios from 'axios'
+import API from '../api/axios'
 import { HiOutlineShieldCheck, HiOutlineUser, HiOutlineEnvelope, HiOutlineLockClosed } from 'react-icons/hi2'
-
-/* Get API URL from env or default to localhost:5000 */
-const API = import.meta.env.VITE_API_URL
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -25,7 +22,7 @@ export default function Signup() {
 
   /* Fetch all active faculty members for the advisor selection dropdown */
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/faculty-list`)
+    API.get('/auth/faculty-list')
       .then(res => setFacultyList(res.data.faculty || []))
       .catch(err => {
         console.error('Failed to fetch faculty list:', err)
