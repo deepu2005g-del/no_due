@@ -1,51 +1,70 @@
 """
 Database connection helper.
-Provides a context-managed connection to PostgreSQL.
+Provides a context-managed connection to MySQL.
 """
-import psycopg2
-import psycopg2.extras
+import pymysql
+import pymysql.cursors
+import os
+import re
 from config import get_config
-
-from psycopg2 import pool
 
 config = get_config()
 
-# Initialize a global thread-safe connection pool
-# Global connection to bypass all Supabase rate limits/deadlocks
-global_conn = None
+DB_HOST = config.DB_HOST
+DB_PORT = int(config.DB_PORT)
+DB_USER = config.DB_USER
+DB_PASSWORD = config.DB_PASSWORD
+DB_NAME = config.DB_NAME
 
 def get_db():
-    global global_conn
-    if global_conn is None or global_conn.closed:
-        global_conn = psycopg2.connect(config.DATABASE_URL)
-        global_conn.autocommit = True
-    return global_conn
-
-
+    return pymysql.connect(
+        host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD,
+        database=DB_NAME, autocommit=True, cursorclass=pymysql.cursors.DictCursor
+    )
 
 
 def query_db(sql, params=None, one=False, commit=False):
-    """
-    Execute a SQL query and return results as list of dicts.
-    - one=True returns single row or None
-    - commit=True commits the transaction (for INSERT/UPDATE/DELETE)
-    """
     conn = get_db()
     try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute(sql, params)
+        with conn.cursor() as cur:
+            # Emulate RETURNING for MySQL
+            returning_match = re.search(r'RETURNING\s+(.+)$', sql, re.IGNORECASE | re.DOTALL)
+            returning_cols = returning_match.group(1).strip() if returning_match else None
+            if returning_cols:
+                sql = re.sub(r'\s+RETURNING\s+.+$', '', sql, flags=re.IGNORECASE | re.DOTALL)
+            cur.execute(sql, params or ())
             if commit:
                 conn.commit()
-                # For INSERT ... RETURNING, try to fetch results
-                try:
-                    results = cur.fetchall()
-                    return dict(results[0]) if one and results else [dict(r) for r in results]
-                except psycopg2.ProgrammingError:
+                last_id = cur.lastrowid
+                if returning_cols and last_id:
+                    # determine table
+                    tmatch = re.search(r'(?:INSERT INTO|UPDATE)\s+(\w+)', sql, re.IGNORECASE)
+                    table = tmatch.group(1) if tmatch else None
+                    if table:
+                        cur.execute(f"SELECT * FROM {table} WHERE id = %s", (last_id,))
+                        row = cur.fetchone()
+                        if one:
+                            return row
+                        return [row] if row else []
+                if one:
                     return None
-            results = cur.fetchall()
+                return None
+            # For SELECT/UPDATE without returning
+            try:
+                results = cur.fetchall()
+            except Exception:
+                results = None
             if one:
-                return dict(results[0]) if results else None
-            return [dict(r) for r in results]
+                return results[0] if results else None
+            return results if results is not None else []
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         raise e
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass

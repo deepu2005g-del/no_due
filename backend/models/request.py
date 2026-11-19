@@ -29,10 +29,12 @@ def get_request_by_id(request_id: int) -> dict:
 def get_requests_by_student(student_id: int) -> list:
     """Get all requests for a student."""
     return query_db(
-        """SELECT r.*, 
+        """SELECT r.*, ht.ticket_number, ht.issued_at as ticket_issued_at,
            (SELECT COUNT(*) FROM approvals a WHERE a.request_id = r.id AND a.status = 'approved') as approved_count,
            (SELECT COUNT(*) FROM approvals a WHERE a.request_id = r.id) as total_departments
-           FROM requests r WHERE r.student_id = %s
+           FROM requests r
+           LEFT JOIN hall_tickets ht ON ht.request_id = r.id
+           WHERE r.student_id = %s
            ORDER BY r.created_at DESC""",
         (student_id,)
     )

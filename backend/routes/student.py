@@ -90,8 +90,12 @@ def get_status():
 
     # Enrich each request with approval details
     result = []
+    advanced_statuses = ('faculty_approved', 'departments_cleared', 'hod_approved')
     for req in requests:
         approvals = get_approvals_for_request(req['id'])
+        for a in approvals:
+            if a['department_name'] == 'Faculty' and req['status'] in advanced_statuses:
+                a['status'] = 'approved'
         result.append({
             **req,
             'approvals': approvals,

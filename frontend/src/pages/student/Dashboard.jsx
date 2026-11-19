@@ -6,13 +6,18 @@ import API from '../../api/axios'
 import StatusTracker from '../../components/StatusTracker'
 import toast from 'react-hot-toast'
 import { HiOutlinePaperAirplane, HiOutlineRefresh, HiOutlineClock, HiOutlineCheckCircle, HiOutlineXCircle } from 'react-icons/hi'
+import { printHallTicket } from '../../utils/hallTicket'
 
 export default function StudentDashboard() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => { fetchStatus() }, [])
+  useEffect(() => {
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchStatus = async () => {
     try {
@@ -109,28 +114,6 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* Dues and Payments Section */}
-      <div className="glass-card p-6 border-l-4 border-amber-500/50">
-        <h3 className="text-lg font-semibold text-white mb-4">My Dues / Payments</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-surface-300">
-          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
-            <p className="text-xs text-surface-500 mb-1">Library Dues</p>
-            <p className="text-lg font-bold text-white">₹0.00</p>
-            <span className="text-[10px] text-emerald-400">● All Cleared</span>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
-            <p className="text-xs text-surface-500 mb-1">Hostel Fees</p>
-            <p className="text-lg font-bold text-white">₹4,500.00</p>
-            <span className="text-[10px] text-amber-400">● Pending Payment</span>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-800/50 border border-surface-700/30">
-            <p className="text-xs text-surface-500 mb-1">Account Balance</p>
-            <p className="text-lg font-bold text-white">₹0.00</p>
-            <span className="text-[10px] text-emerald-400">● No Arrears</span>
-          </div>
-        </div>
-      </div>
-
       {/* Requests List */}
       {requests.map((req) => (
         <div key={req.id} className="glass-card p-6 animate-slide-up">
@@ -148,7 +131,7 @@ export default function StudentDashboard() {
           </div>
 
           {/* Status Pipeline */}
-          <StatusTracker status={req.status} />
+          <StatusTracker status={req.status} hasHallTicket={!!req.ticket_number} />
 
           {/* Department Approvals */}
           {req.approvals && req.approvals.length > 0 && (
@@ -173,6 +156,36 @@ export default function StudentDashboard() {
                     {a.remarks && <p className="text-xs text-surface-400 mt-1 truncate">{a.remarks}</p>}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hall Ticket */}
+          {req.ticket_number && (
+            <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-400">Hall Ticket Generated</p>
+                  <p className="text-xs text-surface-300 mt-1">Ticket No: {req.ticket_number}</p>
+                  {req.ticket_issued_at && (
+                    <p className="text-xs text-surface-500 mt-1">
+                      Issued: {new Date(req.ticket_issued_at).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await API.get(`/staff/hallticket/${req.id}`)
+                      printHallTicket(res.data.hall_ticket)
+                    } catch (e) {
+                      toast.error('Failed to load hall ticket')
+                    }
+                  }}
+                  className="btn-success text-xs"
+                >
+                  View / Download
+                </button>
               </div>
             </div>
           )}

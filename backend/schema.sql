@@ -1,120 +1,93 @@
 -- No-Due Clearance Management System - Database Schema
--- PostgreSQL
+-- MySQL
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+DROP TABLE IF EXISTS hall_tickets;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS approvals;
+DROP TABLE IF EXISTS requests;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS users;
 
--- Drop existing tables if they exist (clean slate for demo)
-DROP TABLE IF EXISTS hall_tickets CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
-DROP TABLE IF EXISTS approvals CASCADE;
-DROP TABLE IF EXISTS requests CASCADE;
-DROP TABLE IF EXISTS students CASCADE;
-DROP TABLE IF EXISTS departments CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
--- Drop existing types if they exist
-DROP TYPE IF EXISTS user_role CASCADE;
-DROP TYPE IF EXISTS request_status CASCADE;
-DROP TYPE IF EXISTS approval_status CASCADE;
-
--- Enum types
-CREATE TYPE user_role AS ENUM ('student', 'faculty', 'admin', 'hod', 'staff');
-CREATE TYPE request_status AS ENUM ('pending', 'faculty_approved', 'departments_cleared', 'hod_approved', 'rejected', 'resubmitted');
-CREATE TYPE approval_status AS ENUM ('pending', 'approved', 'rejected');
-
--- ============================================
--- USERS TABLE
--- ============================================
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(150) NOT NULL,
-    role user_role NOT NULL DEFAULT 'student',
+    role ENUM('student','faculty','admin','hod','staff') NOT NULL DEFAULT 'student',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================================
--- DEPARTMENTS TABLE
--- ============================================
 CREATE TABLE departments (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) UNIQUE NOT NULL,       -- Library, Hostel, Accounts, Faculty
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================
--- STUDENTS TABLE
--- ============================================
 CREATE TABLE students (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL,
     roll_no VARCHAR(50) UNIQUE NOT NULL,
-    department VARCHAR(100) NOT NULL,         -- Academic department (CSE, ECE, etc.)
-    semester INTEGER NOT NULL CHECK (semester BETWEEN 1 AND 8),
-    attendance_pct NUMERIC(5,2) DEFAULT 0.00 CHECK (attendance_pct BETWEEN 0 AND 100),
-    faculty_advisor_id INTEGER REFERENCES users(id),  -- Assigned faculty
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    department VARCHAR(100) NOT NULL,
+    semester INT NOT NULL CHECK (semester BETWEEN 1 AND 8),
+    attendance_pct DECIMAL(5,2) DEFAULT 0.00,
+    faculty_advisor_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_advisor_id) REFERENCES users(id)
 );
 
--- ============================================
--- REQUESTS TABLE (No-Due Requests)
--- ============================================
 CREATE TABLE requests (
-    id SERIAL PRIMARY KEY,
-    student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    status request_status NOT NULL DEFAULT 'pending',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    status ENUM('pending','faculty_approved','departments_cleared','hod_approved','rejected','resubmitted') NOT NULL DEFAULT 'pending',
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
--- ============================================
--- APPROVALS TABLE (Per-Department Approval)
--- ============================================
 CREATE TABLE approvals (
-    id SERIAL PRIMARY KEY,
-    request_id INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
-    department_id INTEGER NOT NULL REFERENCES departments(id),
-    approver_id INTEGER REFERENCES users(id),
-    status approval_status NOT NULL DEFAULT 'pending',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    request_id INT NOT NULL,
+    department_id INT NOT NULL,
+    approver_id INT,
+    status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
     remarks TEXT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(request_id, department_id)         -- One approval per department per request
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE(request_id, department_id),
+    FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (approver_id) REFERENCES users(id)
 );
 
--- ============================================
--- NOTIFICATIONS TABLE
--- ============================================
 CREATE TABLE notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-    link VARCHAR(255),                        -- Optional deep-link
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    link VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ============================================
--- HALL TICKETS TABLE
--- ============================================
 CREATE TABLE hall_tickets (
-    id SERIAL PRIMARY KEY,
-    request_id INTEGER UNIQUE NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
-    issued_by INTEGER NOT NULL REFERENCES users(id),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    request_id INT UNIQUE NOT NULL,
+    issued_by INT NOT NULL,
     ticket_number VARCHAR(50) UNIQUE NOT NULL,
-    issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (issued_by) REFERENCES users(id)
 );
 
--- Indexes for performance
 CREATE INDEX idx_requests_student ON requests(student_id);
 CREATE INDEX idx_requests_status ON requests(status);
 CREATE INDEX idx_approvals_request ON approvals(request_id);
 CREATE INDEX idx_approvals_status ON approvals(status);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
-CREATE INDEX idx_notifications_unread ON notifications(user_id, is_read) WHERE is_read = FALSE;
 CREATE INDEX idx_students_faculty ON students(faculty_advisor_id);
+"""

@@ -59,7 +59,7 @@ def check_all_departments_cleared(request_id: int) -> bool:
     result = query_db(
         """SELECT 
            COUNT(*) as total,
-           COUNT(*) FILTER (WHERE status = 'approved') as approved
+           SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved
            FROM approvals WHERE request_id = %s""",
         (request_id,), one=True
     )

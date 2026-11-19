@@ -53,6 +53,23 @@ export default function HodDashboard() {
   const toggleSelect = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   const selectAll = () => setSelected(selected.length === requests.length ? [] : requests.map(r => r.id))
 
+  const downloadCsv = async () => {
+    try {
+      const res = await API.get('/hod/report.csv', { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `department_clearance_report_${new Date().toISOString().slice(0, 10)}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('CSV report downloaded')
+    } catch (err) {
+      toast.error('Failed to generate report')
+    }
+  }
+
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
 
   return (
@@ -193,7 +210,7 @@ export default function HodDashboard() {
                 </tbody>
               </table>
             </div>
-            <button className="btn-primary mt-6 text-xs" onClick={() => toast.success('Report generation in progress...')}>Generate CSV Report</button>
+            <button className="btn-primary mt-6 text-xs" onClick={downloadCsv}>Generate CSV Report</button>
           </div>
           
           {/* Reuse stats if available */}

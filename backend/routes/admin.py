@@ -11,6 +11,7 @@ from models.approval import (approve_department, reject_department,
                               get_approvals_by_department)
 from models.notification import create_notification
 from models.department import get_all_departments
+from models.user import create_user, get_user_by_email
 from models import query_db
 
 admin_bp = Blueprint('admin', __name__)
@@ -161,6 +162,46 @@ def get_users():
     
     users = query_db("SELECT id, name, email, role, is_active, created_at FROM users ORDER BY created_at DESC")
     return jsonify({'users': users}), 200
+
+
+@admin_bp.route('/users', methods=['POST'])
+@jwt_required()
+def create_user_admin():
+    """Create a new user (Admin only)."""
+    claims = get_jwt()
+    if claims.get('role') != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+
+    data = request.get_json() or {}
+    required = ['name', 'email', 'password', 'role']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'Missing field: {field}'}), 400
+
+    valid_roles = ['student', 'faculty', 'admin', 'hod', 'staff']
+    if data['role'] not in valid_roles:
+        return jsonify({'error': f'Invalid role. Must be one of: {valid_roles}'}), 400
+
+    if get_user_by_email(data['email']):
+        return jsonify({'error': 'Email already registered'}), 409
+
+    if data['role'] == 'student':
+        for field in ['roll_no', 'department', 'semester']:
+            if not data.get(field):
+                return jsonify({'error': f'Students must provide: {field}'}), 400
+
+    user = create_user(data['email'], data['password'], data['name'], data['role'])
+
+    if data['role'] == 'student':
+        query_db(
+            """INSERT INTO students (user_id, roll_no, department, semester, attendance_pct, faculty_advisor_id)
+               VALUES (%s, %s, %s, %s, %s, %s)""",
+            (user['id'], data['roll_no'], data['department'], data['semester'],
+             data.get('attendance_pct', 0), data.get('faculty_advisor_id') or None),
+            commit=True
+        )
+
+    return jsonify({'message': 'User created successfully', 'user': user}), 201
 
 
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])

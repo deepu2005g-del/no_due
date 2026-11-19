@@ -25,7 +25,7 @@ export default function Signup() {
 
   /* Fetch all active faculty members for the advisor selection dropdown */
   useEffect(() => {
-    axios.get(`${API}/auth/faculty-list`)
+    axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/faculty-list`)
       .then(res => setFacultyList(res.data.faculty || []))
       .catch(err => {
         console.error('Failed to fetch faculty list:', err)

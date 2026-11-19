@@ -21,8 +21,8 @@ const statusToStep = {
   rejected: -1,
 }
 
-export default function StatusTracker({ status }) {
-  const currentStep = statusToStep[status] ?? 0
+export default function StatusTracker({ status, hasHallTicket = false }) {
+  const currentStep = hasHallTicket ? 4 : (statusToStep[status] ?? 0)
   const isRejected = status === 'rejected'
 
   return (

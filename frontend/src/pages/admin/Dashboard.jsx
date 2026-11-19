@@ -31,6 +31,29 @@ export default function AdminDashboard() {
 
   const [users, setUsers] = useState([])
   const [activeTab, setActiveTab] = useState('requests')
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [newUser, setNewUser] = useState({
+    name: '', email: '', password: '', role: 'student',
+    roll_no: '', department: '', semester: '8', attendance_pct: '90', faculty_advisor_id: ''
+  })
+
+  const createNewUser = async (e) => {
+    e.preventDefault()
+    try {
+      const payload = { ...newUser }
+      if (payload.role !== 'student') {
+        delete payload.roll_no; delete payload.department; delete payload.semester
+        delete payload.attendance_pct; delete payload.faculty_advisor_id
+      }
+      await API.post('/admin/users', payload)
+      toast.success('User created successfully!')
+      setShowAddUser(false)
+      setNewUser({ name: '', email: '', password: '', role: 'student', roll_no: '', department: '', semester: '8', attendance_pct: '90', faculty_advisor_id: '' })
+      fetchData()
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create user')
+    }
+  }
 
   const deleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return
@@ -107,7 +130,7 @@ export default function AdminDashboard() {
         <div className="glass-card overflow-hidden">
           <div className="p-6 border-b border-surface-700/50 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">Full User Control Panel</h2>
-            <button className="btn-primary text-xs" onClick={() => toast.error('Use signup for adding users in this demo')}>+ Add New User</button>
+            <button className="btn-primary text-xs" onClick={() => setShowAddUser(true)}>+ Add New User</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -133,6 +156,40 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {showAddUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowAddUser(false)}>
+          <form className="glass-card p-6 w-full max-w-lg mx-4 animate-slide-up space-y-3" onClick={(e) => e.stopPropagation()} onSubmit={createNewUser}>
+            <h3 className="text-lg font-semibold text-white mb-2">Add New User</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input required className="input-field" placeholder="Full Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} />
+              <input required type="email" className="input-field" placeholder="Email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
+              <input required type="password" className="input-field" placeholder="Password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} />
+              <select className="input-field" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="admin">Admin</option>
+                <option value="hod">HOD</option>
+                <option value="staff">Staff</option>
+              </select>
+            </div>
+            {newUser.role === 'student' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input required className="input-field" placeholder="Roll No" value={newUser.roll_no} onChange={e => setNewUser({ ...newUser, roll_no: e.target.value })} />
+                <input required className="input-field" placeholder="Department (e.g. CSE)" value={newUser.department} onChange={e => setNewUser({ ...newUser, department: e.target.value })} />
+                <select className="input-field" value={newUser.semester} onChange={e => setNewUser({ ...newUser, semester: e.target.value })}>
+                  {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                </select>
+                <input type="number" min="0" max="100" step="0.01" className="input-field" placeholder="Attendance %" value={newUser.attendance_pct} onChange={e => setNewUser({ ...newUser, attendance_pct: e.target.value })} />
+              </div>
+            )}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setShowAddUser(false)} className="btn-ghost">Cancel</button>
+              <button type="submit" className="btn-primary">Create User</button>
+            </div>
+          </form>
         </div>
       )}
 
